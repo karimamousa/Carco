@@ -1,9 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:phase1/pages/LoginSignup.dart';
 import 'welcome.dart';
-import 'LoginSignup.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'navbar.dart';
 class SettingPage extends StatefulWidget {
   @override
@@ -84,11 +81,7 @@ class _SettingPageState extends State<SettingPage> {
                         borderRadius: BorderRadius.circular(20)
                     )
                 ),
-                onPressed: ()async{
-                  await FirebaseAuth.instance.signOut();
-
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>LoginSignup()));
-                },
+                onPressed:(){},
                 child: Text("Sign Out",style: TextStyle(
                     fontSize: 16,
                     letterSpacing: 2.2,

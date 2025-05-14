@@ -1,0 +1,2 @@
+D:/Carco/android/app/.cxx/Debug/55e192u2/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Carco/android/app/.cxx/Debug/55e192u2/armeabi-v7a/CMakeFiles/rebuild_cache.dir

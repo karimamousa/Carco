@@ -1,99 +1,115 @@
 import 'package:flutter/material.dart';
-import 'package:phase1/pages/availablecar_screen.dart';
 import 'package:phase1/pages/navbar.dart';
-import 'FirestoreService.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 
 class HomePage2 extends StatefulWidget {
   const HomePage2({Key? key}) : super(key: key);
 
   @override
-  State<HomePage2> createState() => _HomePageState();
+  State<HomePage2> createState() => _HomePage2State();
 }
 
-class _HomePageState extends State<HomePage2> {
+class _HomePage2State extends State<HomePage2> {
   final TextEditingController textController = TextEditingController();
 
-  final FirestoreService firestoreService = FirestoreService();
+  // البيانات المحلية
+  List<Map<String, String>> notesList = [];
 
-  void openNoteBox({String? docID}) {
+  void openNoteBox({String? noteID}) {
+    // لو تعديل، نعرض النص الحالي
+    if (noteID != null) {
+      final note = notesList.firstWhere((note) => note['id'] == noteID);
+      textController.text = note['note'] ?? '';
+    } else {
+      textController.clear();
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         content: TextField(
           controller: textController,
+          decoration: const InputDecoration(labelText: "Note"),
         ),
         actions: [
           ElevatedButton(
-
             onPressed: () {
-              if (docID == null) {
-                firestoreService.addNote(textController.text);
+              if (noteID == null) {
+                // إضافة
+                setState(() {
+                  notesList.add({
+                    'id': Random().nextInt(100000).toString(),
+                    'note': textController.text
+                  });
+                });
               } else {
-                firestoreService.updateNote(docID, textController.text);
+                // تعديل
+                setState(() {
+                  final index = notesList.indexWhere((note) => note['id'] == noteID);
+                  if (index != -1) {
+                    notesList[index]['note'] = textController.text;
+                  }
+                });
               }
               textController.clear();
               Navigator.pop(context);
             },
-            child: Text("Add"),
+            child: Text(noteID == null ? "Add" : "Update"),
           )
         ],
       ),
     );
   }
 
+  void deleteNote(String id) {
+    setState(() {
+      notesList.removeWhere((note) => note['id'] == id);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Notes",
-        style: TextStyle(color: Colors.white),
-      ),
-        leading: IconButton(icon: Icon(Icons.arrow_back) ,
+      appBar: AppBar(
+        title: const Text("Notes", style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xff00637c),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
           color: Colors.white,
-          onPressed: () => {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>navbar()))},
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => navbar()));
+          },
         ),
-
-        backgroundColor: Color(0xff00637c),),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: openNoteBox,
         child: const Icon(Icons.add),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: firestoreService.getNotesStream(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<QueryDocumentSnapshot> notesList = snapshot.data!.docs;
-            return ListView.builder(
-              itemCount: notesList.length,
-              itemBuilder: (context, index) {
-                QueryDocumentSnapshot document = notesList[index];
-                String docID = document.id;
+      body: notesList.isEmpty
+          ? const Center(child: Text("No notes.."))
+          : ListView.builder(
+        itemCount: notesList.length,
+        itemBuilder: (context, index) {
+          final note = notesList[index];
+          final id = note['id']!;
+          final noteText = note['note']!;
 
-                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                String noteText = data['note'];
-
-                return ListTile(
-                  title: Text(noteText),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () => openNoteBox(docID: docID),
-                        icon: const Icon(Icons.settings),
-                      ),
-                      IconButton(
-                        onPressed: () => firestoreService.deleteNote(docID),
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          } else {
-            return const Text("No notes..");
-          }
+          return ListTile(
+            title: Text(noteText),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () => openNoteBox(noteID: id),
+                  icon: const Icon(Icons.settings),
+                ),
+                IconButton(
+                  onPressed: () => deleteNote(id),
+                  icon: const Icon(Icons.delete),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

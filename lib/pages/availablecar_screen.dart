@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:phase1/pages/availablecar2.dart';
 
 import 'availablecar_list.dart';
@@ -108,7 +108,7 @@ class _AvailableCarScreennState extends State<AvailableCarScreenn> {
 
           BrandList(),
           SizedBox(
-            height: 537,
+            height: MediaQuery.of(context).size.height*0.5,
             width: 500,
             child: ListView(
               children: [
